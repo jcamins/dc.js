@@ -31,10 +31,18 @@ var candlestick = function () {
  **/
 dc.assetChart = function (parent, chartGroup) {
     var _chart = dc.coordinateGridMixin({});
+    var _private = { };
+
+    function simpleAccessor(c, v, def) {
+        _private[v] = def;
+        c[v] = function (x) {
+            if (!arguments.length) return _private[v];
+            _private[v] = x;
+            return c;
+        };
+    }
 
     var _renderOpen, _renderHigh, _renderLow, _renderClose;
-
-    var _tickFormat = null;
 
     var _boxWidth = function (innerChartWidth, xUnits) {
         if (_chart.isOrdinal())
@@ -84,29 +92,59 @@ dc.assetChart = function (parent, chartGroup) {
         _chart.fadeDeselectedArea();
     };
 
+    var _boxWidth = function (innerChartWidth, xUnits) {
+        if (_chart.isOrdinal())
+            return _chart.x().rangeBand();
+        else
+            return innerChartWidth / (1 + _chart.boxPadding()) / xUnits;
+    };
+
     function renderCandlesticks(candlesticksG) {
         var candlesticksGEnter = candlesticksG.enter().append("g");
+        var _calculatedBoxWidth = _boxWidth(_chart.effectiveWidth(), _chart.xUnitCount());
 
         candlesticksGEnter
             .attr("class", "candlestick")
-            .attr("transform", candlestickTransform)
             .on("click", function(d) {
                 _chart.filter(d.key);
                 _chart.redrawGroup();
             });
+        candlesticksGEnter.append("rect")
+            .attr("class", "box")
+            .attr("width", _calculatedBoxWidth)
+            .attr("height", function (d, i) {
+                return Math.abs(_chart.y()(_chart.openAccessor()(d.value, i)) - _chart.y()(_chart.closeAccessor()(d.value, i)));
+            })
+            .attr("y", function (d, i) {
+                return _chart.y()(Math.max(_chart.openAccessor()(d.value, i), _chart.closeAccessor()(d.value, i)));
+            });
+
     }
 
     function updateCandlesticks(candlesticksG) {
         dc.transition(candlesticksG, _chart.transitionDuration())
             .attr("transform", candlestickTransform)
             .each(function() {
-                d3.select(this).select('rect.candlestick').attr("fill", _chart.getColor);
+                d3.select(this).select('rect.box').attr("fill", _chart.getColor);
             });
     }
 
     function removeCandlesticks(candlesticksG) {
         candlesticksG.exit().remove();
     }
+
+    /**
+     #### .openAccessor([accessorFunction])
+     Set or get the accessor function for the open rate. Defaults to a function that retrieves
+     the 'open' property in the value object.
+     **/
+    simpleAccessor(_chart, 'openAccessor', dc.pluck('open'));
+    /**
+     #### .closeAccessor([accessorFunction])
+     Set or get the accessor function for the close rate. Defaults to a function that retrieves
+     the 'close' property in the value object.
+     **/
+    simpleAccessor(_chart, 'closeAccessor', dc.pluck('close'));
 
     _chart.fadeDeselectedArea = function () {
         if (_chart.hasFilter()) {

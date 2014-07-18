@@ -29,11 +29,10 @@ describe('dc.assetChart', function() {
             .height(144)
             .margins({top: 0, right: 0, bottom: 0, left: 0})
             .transitionDuration(0)
-            .y(d3.scale.linear().domain([0, 144]))
-            .ordinalColors(['#01','#02']);
+            .y(d3.scale.linear().domain([540, 600]));
     });
 
-    describe('rendering the asset chart', function () {
+    describe('rendering candlesticks', function () {
         beforeEach(function () {
             chart.render();
         });
@@ -45,5 +44,31 @@ describe('dc.assetChart', function() {
         it('should create a candlestick for each group', function() {
             expect(chart.selectAll('g.candlestick').size()).toBe(data.size());
         });
+
+        it('should add a box to each candlestick', function () {
+            expect(chart.selectAll('rect.box').size()).toBe(data.size());
+        });
+
+        it('should set the box width to fill available space', function () {
+            expect(+chart.select('rect.box').attr('width')).toBe(chart.x().rangeBand());
+        });
+
+        it('should set the box top according to open and close data', function () {
+            forEachDatum(function (cs, d) {
+                expect(+cs.select('rect.box').attr('y')).toBe(Math.min(chart.y()(d.value.open), chart.y()(d.value.close)));
+            });
+        });
+
+        it('should set the box height according to open and close data', function () {
+            forEachDatum(function (cs, d) {
+                expect(+cs.select('rect.box').attr('height')).toBe(Math.abs(chart.y()(d.value.open) - chart.y()(d.value.close)));
+            });
+        });
     });
+
+    function forEachDatum(assertions) {
+        chart.selectAll("g.candlestick").each(function (d) {
+            assertions(d3.select(this), d);
+        });
+    }
 });
