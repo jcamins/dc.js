@@ -64,11 +64,20 @@ describe('dc.assetChart', function() {
                 expect(+cs.select('rect.box').attr('height')).toBe(Math.abs(chart.y()(d.value.open) - chart.y()(d.value.close)));
             });
         });
+
+        it('should color bull periods green and bear periods red', function () {
+            expect(nth('rect.box', 0).attr('fill')).toBe('red');
+            expect(nth('rect.box', 2).attr('fill')).toBe('green');
+        });
     });
 
     function forEachDatum(assertions) {
         chart.selectAll("g.candlestick").each(function (d) {
             assertions(d3.select(this), d);
         });
+    }
+
+    function nth(selector, n) {
+        return d3.select(d3.selectAll(selector)[0][n]);
     }
 });

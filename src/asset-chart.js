@@ -146,6 +146,11 @@ dc.assetChart = function (parent, chartGroup) {
      **/
     simpleAccessor(_chart, 'closeAccessor', dc.pluck('close'));
 
+    _chart.colors(d3.scale.ordinal().domain(['down', 'up']).range(['red', 'green']));
+    _chart.colorAccessor(function (d) {
+        return _chart.closeAccessor()(d.value) > _chart.openAccessor()(d.value) ? 'up' : 'down';
+    });
+
     _chart.fadeDeselectedArea = function () {
         if (_chart.hasFilter()) {
             _chart.g().selectAll("g.candlestick").each(function (d) {
