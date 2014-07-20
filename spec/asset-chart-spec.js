@@ -27,9 +27,11 @@ describe('dc.assetChart', function() {
             .group(group)
             .width(300)
             .height(144)
+            .xUnits(d3.time.days)
+            .x(d3.time.scale().domain([dimension.bottom(1)[0].date, dimension.top(1)[0].date]))
+            .y(d3.scale.linear().domain([540, 600]))
             .margins({top: 0, right: 0, bottom: 0, left: 0})
-            .transitionDuration(0)
-            .y(d3.scale.linear().domain([540, 600]));
+            .transitionDuration(0);
     });
 
     describe('rendering candlesticks', function () {
@@ -53,8 +55,8 @@ describe('dc.assetChart', function() {
             expect(chart.selectAll('line.shadow').size()).toBe(data.size());
         });
 
-        it('should set the box width to fill available space', function () {
-            expect(+chart.select('rect.box').attr('width')).toBe(chart.x().rangeBand());
+        it('should set the box width to fill 70% of box space', function () {
+            expect(Math.round(+chart.select('rect.box').attr('width'))).toBe(8);
         });
 
         it('should set the box top according to open and close data', function () {

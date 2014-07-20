@@ -1,7 +1,3 @@
-var candlestick = function () {
-    function candlestick(g) {
-    }
-};
 /**
  ## Asset Chart
 
@@ -45,9 +41,9 @@ dc.assetChart = function (parent, chartGroup) {
     // default padding to handle min/max whisker text
     _chart.yAxisPadding(12);
 
-    // default to ordinal
-    _chart.x(d3.scale.ordinal());
-    _chart.xUnits(dc.units.ordinal);
+    // default to using a time scale with hour units
+    _chart.x(d3.time.scale());
+    _chart.xUnits(d3.time.hours);
 
     // valueAccessor should return an array of values that can be coerced into numbers
     // or if data is overloaded for a static array of arrays, it should be `Number`.
@@ -118,7 +114,7 @@ dc.assetChart = function (parent, chartGroup) {
             })
             .attr("y2", function (d, i) {
                 return _chart.y()(_chart.lowAccessor()(d.value, i));
-            })
+            });
     }
 
     function updateCandlesticks(candlesticksG) {
@@ -158,6 +154,17 @@ dc.assetChart = function (parent, chartGroup) {
      the 'close' property in the value object.
      **/
     simpleAccessor(_chart, 'closeAccessor', dc.pluck('close'));
+
+    /**
+    #### .boxPadding([padding])
+    Get or set the spacing between boxes as a fraction of box size. Valid values are within 0-1.
+    See the [d3 docs](https://github.com/mbostock/d3/wiki/Ordinal-Scales#wiki-ordinal_rangeBands)
+    for a visual description of how the padding is applied.
+
+    Default: 0.3
+    **/
+    _chart.boxPadding = _chart._rangeBandPadding;
+    _chart.boxPadding(0.3);
 
     _chart.colors(d3.scale.ordinal().domain(['down', 'up']).range(['red', 'green']));
     _chart.colorAccessor(function (d) {

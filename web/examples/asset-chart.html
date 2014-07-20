@@ -15,7 +15,7 @@
 <script type="text/javascript">
 
 function loadAssetChartFixture() {
-    return JSON.parse("[" +
+    var data = JSON.parse("[" +
         "{\"date\":\"2014-01-02\",\"open\":557.17,\"high\":558.32,\"low\":553.58,\"close\":556.00}, " +
         "{\"date\":\"2014-01-03\",\"open\":556.94,\"high\":557.91,\"low\":551.91,\"close\":551.95}, " +
         "{\"date\":\"2014-01-06\",\"open\":555.95,\"high\":558.87,\"low\":552.67,\"close\":558.10}, " +
@@ -38,6 +38,10 @@ function loadAssetChartFixture() {
         "{\"date\":\"2014-01-30\",\"open\":571.93,\"high\":575.67,\"low\":563.06,\"close\":567.13}, " +
         "{\"date\":\"2014-01-31\",\"open\":585.09,\"high\":592.68,\"low\":574.99,\"close\":589.89} " +
         "]");
+    for (var ii = 0; ii < data.length; ii++) {
+        data[ii].date = new Date(data[ii].date);
+    }
+    return data;
 }
 
 var chart = dc.assetChart('#asset-test');
@@ -60,8 +64,12 @@ chart
     .group(group)
     .width(768)
     .height(480)
+    .xUnits(d3.time.days)
+    .x(d3.time.scale().domain([dimension.bottom(1)[0].date, dimension.top(1)[0].date]))
     .y(d3.scale.linear().domain([540, 600]))
-    .margins({top: 0, right: 0, bottom: 0, left: 0});
+    .margins({top: 10, right: 50, bottom: 30, left: 50});
+
+//chart.xAxis().tickFormat(function (v) { return (v.getMonth() + 1) + '/' + v.getDay() + '/' + v.getFullYear(); });
 dc.renderAll();
 
 </script>
