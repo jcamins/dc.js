@@ -75,8 +75,6 @@ dc.assetChart = function (parent, chartGroup) {
         renderCandlesticks(candlesticksG);
         updateCandlesticks(candlesticksG);
         removeCandlesticks(candlesticksG);
-
-        _chart.fadeDeselectedArea();
     };
 
     var _boxWidth = function (innerChartWidth, xUnits) {
@@ -91,11 +89,7 @@ dc.assetChart = function (parent, chartGroup) {
         var _calculatedBoxWidth = _boxWidth(_chart.effectiveWidth(), _chart.xUnitCount());
 
         candlesticksGEnter
-            .attr("class", "candlestick")
-            .on("click", function(d) {
-                _chart.filter(d.key);
-                _chart.redrawGroup();
-            });
+            .attr("class", "candlestick");
         candlesticksGEnter.append("rect")
             .attr("class", "box")
             .attr("width", _calculatedBoxWidth)
@@ -170,40 +164,6 @@ dc.assetChart = function (parent, chartGroup) {
     _chart.colorAccessor(function (d) {
         return _chart.closeAccessor()(d.value) > _chart.openAccessor()(d.value) ? 'up' : 'down';
     });
-
-    _chart.fadeDeselectedArea = function () {
-        if (_chart.hasFilter()) {
-            _chart.g().selectAll("g.candlestick").each(function (d) {
-                if (_chart.isSelectedNode(d)) {
-                    _chart.highlightSelected(this);
-                } else {
-                    _chart.fadeDeselected(this);
-                }
-            });
-        } else {
-            _chart.g().selectAll("g.candlestick").each(function () {
-                _chart.resetHighlight(this);
-            });
-        }
-    };
-
-    _chart.isSelectedNode = function (d) {
-        return _chart.hasFilter(d.key);
-    };
-
-    _chart.yAxisMin = function () {
-        var min = d3.min(_chart.data(), function (e) {
-            return d3.min(_chart.valueAccessor()(e));
-        });
-        return dc.utils.subtract(min, _chart.yAxisPadding());
-    };
-
-    _chart.yAxisMax = function () {
-        var max = d3.max(_chart.data(), function (e) {
-            return d3.max(_chart.valueAccessor()(e));
-        });
-        return dc.utils.add(max, _chart.yAxisPadding());
-    };
 
     return _chart.anchor(parent, chartGroup);
 };
