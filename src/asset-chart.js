@@ -42,15 +42,6 @@ dc.assetChart = function (parent, chartGroup) {
         };
     }
 
-    var _renderOpen, _renderHigh, _renderLow, _renderClose;
-
-    var _boxWidth = function (innerChartWidth, xUnits) {
-        if (_chart.isOrdinal())
-            return _chart.x().rangeBand();
-        else
-            return innerChartWidth / (1 + _chart.boxPadding()) / xUnits;
-    };
-
     // default padding to handle min/max whisker text
     _chart.yAxisPadding(12);
 
