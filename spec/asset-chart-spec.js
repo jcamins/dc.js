@@ -9,8 +9,8 @@ describe('dc.assetChart', function() {
         group = dimension.group().reduce(
             function (p, v) {
                 p.open = p.open || v.open;
-                p.high = Math.max(p.high, v.high);
-                p.low = Math.min(p.low, v.low);
+                p.high = Math.max(p.high || v.high, v.high);
+                p.low = Math.min(p.low || v.low, v.low);
                 p.close = v.close;
                 return p;
             },
@@ -49,6 +49,10 @@ describe('dc.assetChart', function() {
             expect(chart.selectAll('rect.box').size()).toBe(data.size());
         });
 
+        it('should add a shadow line to each candlestick', function () {
+            expect(chart.selectAll('line.shadow').size()).toBe(data.size());
+        });
+
         it('should set the box width to fill available space', function () {
             expect(+chart.select('rect.box').attr('width')).toBe(chart.x().rangeBand());
         });
@@ -62,6 +66,18 @@ describe('dc.assetChart', function() {
         it('should set the box height according to open and close data', function () {
             forEachDatum(function (cs, d) {
                 expect(+cs.select('rect.box').attr('height')).toBe(Math.abs(chart.y()(d.value.open) - chart.y()(d.value.close)));
+            });
+        });
+
+        it('should set the shadow line top according to high data', function () {
+            forEachDatum(function (cs, d) {
+                expect(+cs.select('line.shadow').attr('y1')).toBe(chart.y()(d.value.high));
+            });
+        });
+
+        it('should set the shadow line bottom according to low data', function () {
+            forEachDatum(function (cs, d) {
+                expect(+cs.select('line.shadow').attr('y2')).toBe(chart.y()(d.value.low));
             });
         });
 

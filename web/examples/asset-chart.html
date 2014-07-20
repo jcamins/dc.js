@@ -47,8 +47,8 @@ var dimension = data.dimension(function (d) { return d.date; });
 var group = dimension.group().reduce(
         function (p, v) {
             p.open = p.open || v.open;
-            p.high = Math.max(p.high, v.high);
-            p.low = Math.min(p.low, v.low);
+            p.high = Math.max(p.high || v.high, v.high);
+            p.low = Math.min(p.low || v.low, v.low);
             p.close = v.close;
             return p;
         },

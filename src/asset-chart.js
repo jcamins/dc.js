@@ -109,7 +109,16 @@ dc.assetChart = function (parent, chartGroup) {
             .attr("y", function (d, i) {
                 return _chart.y()(Math.max(_chart.openAccessor()(d.value, i), _chart.closeAccessor()(d.value, i)));
             });
-
+        candlesticksGEnter.append("line")
+            .attr("class", "shadow")
+            .attr("x1", _calculatedBoxWidth / 2)
+            .attr("x2", _calculatedBoxWidth / 2)
+            .attr("y1", function (d, i) {
+                return _chart.y()(_chart.highAccessor()(d.value, i));
+            })
+            .attr("y2", function (d, i) {
+                return _chart.y()(_chart.lowAccessor()(d.value, i));
+            })
     }
 
     function updateCandlesticks(candlesticksG) {
@@ -117,6 +126,7 @@ dc.assetChart = function (parent, chartGroup) {
             .attr("transform", candlestickTransform)
             .each(function() {
                 d3.select(this).select('rect.box').attr("fill", _chart.getColor);
+                d3.select(this).select('line.shadow').attr("stroke", _chart.getColor);
             });
     }
 
@@ -130,6 +140,18 @@ dc.assetChart = function (parent, chartGroup) {
      the 'open' property in the value object.
      **/
     simpleAccessor(_chart, 'openAccessor', dc.pluck('open'));
+    /**
+     #### .highAccessor([accessorFunction])
+     Set or get the accessor function for the high rate. Defaults to a function that retrieves
+     the 'high' property in the value object.
+     **/
+    simpleAccessor(_chart, 'highAccessor', dc.pluck('high'));
+    /**
+     #### .lowAccessor([accessorFunction])
+     Set or get the accessor function for the low rate. Defaults to a function that retrieves
+     the 'low' property in the value object.
+     **/
+    simpleAccessor(_chart, 'lowAccessor', dc.pluck('low'));
     /**
      #### .closeAccessor([accessorFunction])
      Set or get the accessor function for the close rate. Defaults to a function that retrieves
