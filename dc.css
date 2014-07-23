@@ -315,3 +315,7 @@ div.dc-chart {
     pointer-events: all;
     cursor: pointer;
 }
+
+.dc-chart .candlestick line, .dc-chart .candlestick rect {
+    shape-rendering: crispEdges;
+}

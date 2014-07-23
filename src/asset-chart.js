@@ -38,39 +38,12 @@ dc.assetChart = function (parent, chartGroup) {
         };
     }
 
-    // default padding to handle min/max whisker text
-    _chart.yAxisPadding(12);
-
     // default to using a time scale with hour units
     _chart.x(d3.time.scale());
     _chart.xUnits(d3.time.hours);
 
-    // valueAccessor should return an array of values that can be coerced into numbers
-    // or if data is overloaded for a static array of arrays, it should be `Number`.
-    // Empty arrays are not included.
-    _chart.data(function(group) {
-        return group.all().map(function (d) {
-            d.map = function(accessor) { return accessor.call(d,d); };
-            return d;
-        }).filter(function (d) {
-            var values = _chart.valueAccessor()(d);
-            return values.length !== 0;
-        });
-    });
-
-    var candlestickTransform = function (d, i) {
-        var xOffset = _chart.x()(_chart.keyAccessor()(d,i));
-        return "translate(" + xOffset + ",0)";
-    };
-
-    _chart._preprocessData = function () {
-        if (_chart.elasticX()) {
-            _chart.x().domain([]);
-        }
-    };
-
     _chart.plotData = function () {
-        var candlesticksG = _chart.chartBodyG().selectAll('g.candlestick').data(_chart.data(), function (d) { return d.key; });
+        var candlesticksG = _chart.chartBodyG().selectAll('g.candlestick').data(_chart.data(), dc.pluck('key'));
 
         renderCandlesticks(candlesticksG);
         updateCandlesticks(candlesticksG);
@@ -112,8 +85,11 @@ dc.assetChart = function (parent, chartGroup) {
     }
 
     function updateCandlesticks(candlesticksG) {
+        var _calculatedBoxWidth = _boxWidth(_chart.effectiveWidth(), _chart.xUnitCount());
         dc.transition(candlesticksG, _chart.transitionDuration())
-            .attr("transform", candlestickTransform)
+            .attr("transform", function (d, i) {
+                return "translate(" + (_chart.x()(_chart.keyAccessor()(d,i)) - (_calculatedBoxWidth / 2)) + ",0)";
+            })
             .each(function() {
                 d3.select(this).select('rect.box').attr("fill", _chart.getColor);
                 d3.select(this).select('line.shadow').attr("stroke", _chart.getColor);
