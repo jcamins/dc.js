@@ -65,7 +65,7 @@ chart
     .width(768)
     .height(480)
     .xUnits(d3.time.days)
-    .x(d3.time.scale().domain([dimension.bottom(1)[0].date, dimension.top(1)[0].date]))
+    .x(d3.time.scale().domain([dimension.bottom(1)[0].date, new Date(dimension.top(1)[0].date).setDate(dimension.top(1)[0].date.getDate() + 1)]))
     .y(d3.scale.linear().domain([540, 600]))
     .margins({top: 10, right: 50, bottom: 30, left: 50});
 
