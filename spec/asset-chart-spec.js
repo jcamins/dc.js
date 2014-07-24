@@ -56,7 +56,7 @@ describe('dc.assetChart', function() {
         });
 
         it('should set the box width to fill 70% of box space', function () {
-            expect(Math.round(+chart.select('rect.box').attr('width'))).toBe(8);
+            expect(Math.round(+chart.select('rect.box').attr('width'))).toBe(7);
         });
 
         it('should set the box top according to open and close data', function () {

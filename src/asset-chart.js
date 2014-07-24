@@ -33,7 +33,7 @@ dc.assetChart = function (parent, chartGroup) {
         _private[v] = def;
         c[v] = function (x) {
             if (!arguments.length) return _private[v];
-            _private[v] = x;
+            _private[v] = typeof x === 'function' ? x : function () { return x; };
             return c;
         };
     }
@@ -50,22 +50,13 @@ dc.assetChart = function (parent, chartGroup) {
         removeCandlesticks(candlesticksG);
     };
 
-    var _boxWidth = function (innerChartWidth, xUnits) {
-        if (_chart.isOrdinal())
-            return _chart.x().rangeBand();
-        else
-            return innerChartWidth / (1 + _chart.boxPadding()) / xUnits;
-    };
-
     function renderCandlesticks(candlesticksG) {
         var candlesticksGEnter = candlesticksG.enter().append("g");
-        var _calculatedBoxWidth = _boxWidth(_chart.effectiveWidth(), _chart.xUnitCount());
 
         candlesticksGEnter
             .attr("class", "candlestick");
         candlesticksGEnter.append("rect")
             .attr("class", "box")
-            .attr("width", _calculatedBoxWidth)
             .attr("height", function (d, i) {
                 return Math.abs(_chart.y()(_chart.openAccessor()(d.value, i)) - _chart.y()(_chart.closeAccessor()(d.value, i)));
             })
@@ -74,8 +65,6 @@ dc.assetChart = function (parent, chartGroup) {
             });
         candlesticksGEnter.append("line")
             .attr("class", "shadow")
-            .attr("x1", _calculatedBoxWidth / 2)
-            .attr("x2", _calculatedBoxWidth / 2)
             .attr("y1", function (d, i) {
                 return _chart.y()(_chart.highAccessor()(d.value, i));
             })
@@ -85,14 +74,23 @@ dc.assetChart = function (parent, chartGroup) {
     }
 
     function updateCandlesticks(candlesticksG) {
-        var _calculatedBoxWidth = _boxWidth(_chart.effectiveWidth(), _chart.xUnitCount());
+        var _boxWidth = _chart.boxWidth()(_chart.xAxisMin()), _center = _boxWidth / 2;
         dc.transition(candlesticksG, _chart.transitionDuration())
             .attr("transform", function (d, i) {
-                return "translate(" + (_chart.x()(_chart.keyAccessor()(d,i)) - (_calculatedBoxWidth / 2)) + ",0)";
+                return "translate(" + (_chart.x()(d.key) - _center) + ",0)";
             })
             .each(function() {
                 d3.select(this).select('rect.box').attr("fill", _chart.getColor);
                 d3.select(this).select('line.shadow').attr("stroke", _chart.getColor);
+            })
+        dc.transition(candlesticksG.selectAll('rect.box'), _chart.transitionDuration())
+            .attr("width", _boxWidth);
+        dc.transition(candlesticksG.selectAll('line.shadow'), _chart.transitionDuration())
+            .attr("x1", function (d, i) {
+                return _center;
+            })
+            .attr("x2", function (d, i) {
+                return _center;
             });
     }
 
@@ -124,6 +122,34 @@ dc.assetChart = function (parent, chartGroup) {
      the 'close' property in the value object.
      **/
     simpleAccessor(_chart, 'closeAccessor', dc.pluck('close'));
+    /**
+     #### .boxWidth([lookupFunction])
+     Set or get the width of each box. This can be either a number or a function that will be
+     called with a sample data point. Defaults to a function that tries to make the width of
+     the boxes equal to exactly one unit.
+     **/
+    simpleAccessor(_chart, 'boxWidth', function (d) {
+        if (_chart.isOrdinal()) {
+            return _chart.x().rangeBand();
+        } else {
+            var unit;
+            d = new Date(d);
+            switch (_chart.xUnits()) {
+                case d3.time.days:
+                    unit = new Date(d).setDate(d.getDate() + 1);
+                    break;
+                case d3.time.hours:
+                    unit = new Date(d).setHour(d.getHour() + 1);
+                    break;
+                case d3.time.minutes:
+                    unit = new Date(d).setMinute(d.getMinute() + 1);
+                    break;
+                default:
+                    return _chart.effectiveWidth() / (1 + _chart.boxPadding()) / _chart.xUnitCount();
+            }
+            return (_chart.x()(unit) - _chart.x()(d)) * (1 - _chart.boxPadding());
+        }
+    });
 
     /**
     #### .boxPadding([padding])
