@@ -1,5 +1,5 @@
 /*!
- *  dc 2.0.0-dev
+ *  dc 2.0.0-alpha.2
  *  http://dc-js.github.io/dc.js/
  *  Copyright 2012 Nick Zhu and other contributors
  *
@@ -20,7 +20,7 @@
 'use strict';
 
 /**
-#### Version 2.0.0-dev
+#### Version 2.0.0-alpha.2
 
 The entire dc.js library is scoped under the **dc** name space. It does not introduce anything else
 into the global name space.
@@ -40,7 +40,7 @@ that are chainable d3 objects.)
 
 **/
 var dc = {
-    version: "2.0.0-dev",
+    version: "2.0.0-alpha.2",
     constants: {
         CHART_CLASS: "dc-chart",
         DEBUG_GROUP_CLASS: "debug",
@@ -660,14 +660,13 @@ dc.baseMixin = function (_chart) {
 
     var NULL_LISTENER = function () {};
 
-    var _listeners = {
-        preRender: NULL_LISTENER,
-        postRender: NULL_LISTENER,
-        preRedraw: NULL_LISTENER,
-        postRedraw: NULL_LISTENER,
-        filtered: NULL_LISTENER,
-        zoomed: NULL_LISTENER
-    };
+    var _listeners = d3.dispatch(
+        "preRender",
+        "postRender",
+        "preRedraw",
+        "postRedraw",
+        "filtered",
+        "zoomed");
 
     var _legend;
 
@@ -1081,6 +1080,10 @@ dc.baseMixin = function (_chart) {
 
     _chart.redrawGroup = function () {
         dc.redrawAll(_chart.chartGroup());
+    };
+
+    _chart.renderGroup = function () {
+        dc.renderAll(_chart.chartGroup());
     };
 
     _chart._invokeFilteredListener = function (f) {
@@ -1515,7 +1518,7 @@ dc.baseMixin = function (_chart) {
 
     **/
     _chart.on = function (event, listener) {
-        _listeners[event] = listener;
+        _listeners.on(event, listener);
         return _chart;
     };
 
@@ -1729,6 +1732,7 @@ dc.coordinateGridMixin = function (_chart) {
     var _xElasticity = false;
     var _xAxisLabel;
     var _xAxisLabelPadding = 0;
+    var _lastXDomain;
 
     var _y;
     var _yAxis = d3.svg.axis().orient("left");
@@ -2001,12 +2005,16 @@ dc.coordinateGridMixin = function (_chart) {
 
     /**
     #### isOrdinal()
-    Returns true if the chart is using ordinal xUnits ([dc.units.ordinal](dcunitsordinal)), or false
+    Returns true if the chart is using ordinal xUnits ([dc.units.ordinal](#dcunitsordinal)), or false
     otherwise. Most charts behave differently with ordinal data and use the result of this method to
-    trigger the special case.
+    trigger the appropriate logic.
     **/
     _chart.isOrdinal = function () {
         return _chart.xUnits() === dc.units.ordinal;
+    };
+
+    _chart._useOuterPadding = function() {
+        return true;
     };
 
     _chart._ordinalXDomain = function() {
@@ -2015,15 +2023,25 @@ dc.coordinateGridMixin = function (_chart) {
     };
 
     function prepareXAxis(g) {
-        if (_chart.elasticX() && !_chart.isOrdinal()) {
-            _x.domain([_chart.xAxisMin(), _chart.xAxisMax()]);
+        if(!_chart.isOrdinal()) {
+            if (_chart.elasticX())
+                _x.domain([_chart.xAxisMin(), _chart.xAxisMax()]);
         }
-        else if (_chart.isOrdinal() && _x.domain().length===0) {
-            _x.domain(_chart._ordinalXDomain());
+        else { // _chart.isOrdinal()
+            if(_chart.elasticX() || _x.domain().length===0)
+                _x.domain(_chart._ordinalXDomain());
         }
 
+        // has the domain changed?
+        var xdom = _x.domain();
+        if(!_lastXDomain || xdom.some(function(elem, i) { return elem != _lastXDomain[i]; }))
+            _chart.rescale();
+        _lastXDomain = xdom;
+
+        // please can't we always use rangeBands for bar charts?
         if (_chart.isOrdinal()) {
-            _x.rangeBands([0,_chart.xAxisLength()],_rangeBandPadding,_outerRangeBandPadding);
+            _x.rangeBands([0,_chart.xAxisLength()],_rangeBandPadding,
+                          _chart._useOuterPadding()?_outerRangeBandPadding:0);
         } else {
             _x.range([0, _chart.xAxisLength()]);
         }
@@ -2790,6 +2808,9 @@ dc.stackMixin = function (_chart) {
                 return true; //domainSet.has(p.x);
             };
         }
+        if (_chart.elasticX()) {
+            return function() { return true; };
+        }
         return function(p) {
             //return true;
             return p.x >= xDomain[0] && p.x <= xDomain[xDomain.length-1];
@@ -2990,7 +3011,7 @@ dc.stackMixin = function (_chart) {
             if (_chart.isLegendableHidden(d)) _chart.showStack(d.name);
             else _chart.hideStack(d.name);
             //_chart.redraw();
-            dc.renderAll(_chart.chartGroup());
+            _chart.renderGroup();
         }
     };
 
@@ -3288,7 +3309,7 @@ dc.bubbleMixin = function (_chart) {
         var filter = d.key;
         dc.events.trigger(function () {
             _chart.filter(filter);
-            dc.redrawAll(_chart.chartGroup());
+            _chart.redrawGroup();
         });
     };
 
@@ -3343,6 +3364,10 @@ dc.pieChart = function (parent, chartGroup) {
         _innerRadius = 0;
 
     var _g;
+    
+    var _cx;
+
+    var _cy;
 
     var _minAngleForLabel = DEFAULT_MIN_ANGLE_FOR_LABEL;
 
@@ -3573,21 +3598,25 @@ dc.pieChart = function (parent, chartGroup) {
     };
 
     /**
-    #### .cx()
-    Get center x coordinate position. This function is **not chainable**.
+    #### .cx([cx])
+    Get or set center x coordinate position. Default is center of svg.
 
     **/
-    _chart.cx = function () {
-        return _chart.width() / 2;
+    _chart.cx = function (cx) {
+        if (!arguments.length) return (_cx ||  _chart.width() / 2);
+        _cx = cx;
+        return _chart;
     };
 
     /**
-    #### .cy()
-    Get center y coordinate position. This function is **not chainable**.
+    #### .cy([cy])
+    Get or set center y coordinate position. Default is center of svg.
 
     **/
-    _chart.cy = function () {
-        return _chart.height() / 2;
+    _chart.cy = function (cy) {
+        if (!arguments.length) return (_cy ||  _chart.height() / 2);
+        _cy = cy;
+        return _chart;
     };
 
     function buildArcs() {
@@ -3827,14 +3856,14 @@ dc.barChart = function (parent, chartGroup) {
         var bars = layer.selectAll("rect.bar")
             .data(d.values, dc.pluck('x'));
 
-        bars.enter()
+        var enter = bars.enter()
             .append("rect")
             .attr("class", "bar")
             .attr("fill", dc.pluck('data',_chart.getColor))
             .attr("height", 0);
 
         if (_chart.renderTitle())
-            bars.append("title").text(dc.pluck('data',_chart.title(d.name)));
+            enter.append("title").text(dc.pluck('data',_chart.title(d.name)));
 
         if (_chart.isOrdinal())
             bars.on("click", onClick);
@@ -3843,7 +3872,7 @@ dc.barChart = function (parent, chartGroup) {
             .attr("x", function (d) {
                 var x = _chart.x()(d.x);
                 if (_centerBar) x -= _barWidth / 2;
-                if (_chart.isOrdinal()) x += _gap/2;
+                if (_chart.isOrdinal() && _gap!==undefined) x += _gap/2;
                 return dc.utils.safeNumber(x);
             })
             .attr("y", function (d) {
@@ -3870,7 +3899,8 @@ dc.barChart = function (parent, chartGroup) {
         if (_barWidth === undefined) {
             var numberOfBars = _chart.xUnitCount();
 
-            if (_chart.isOrdinal() && !_gap)
+            // please can't we always use rangeBands for bar charts?
+            if (_chart.isOrdinal() && _gap===undefined)
                 _barWidth = Math.floor(_chart.x().rangeBand());
             else if (_gap)
                 _barWidth = Math.floor((_chart.xAxisLength() - (numberOfBars - 1) * _gap) / numberOfBars);
@@ -3937,8 +3967,12 @@ dc.barChart = function (parent, chartGroup) {
     _chart.barPadding = function (_) {
         if (!arguments.length) return _chart._rangeBandPadding();
         _chart._rangeBandPadding(_);
-        _gap = 0;
+        _gap = undefined;
         return _chart;
+    };
+
+    _chart._useOuterPadding = function() {
+        return _gap===undefined;
     };
 
     /**
@@ -6853,7 +6887,7 @@ dc.scatterPlot = function (parent, chartGroup) {
         if (_chart.brushIsEmpty(extent)) {
             dc.events.trigger(function () {
                 _chart.filter(null);
-                dc.redrawAll(_chart.chartGroup());
+                _chart.redrawGroup();
             });
 
             resizeFiltered(false);
@@ -6863,7 +6897,7 @@ dc.scatterPlot = function (parent, chartGroup) {
             dc.events.trigger(function () {
                 _chart.filter(null);
                 _chart.filter(ranged2DFilter);
-                dc.redrawAll(_chart.chartGroup());
+                _chart.redrawGroup();
             }, dc.constants.EVENT_DELAY);
 
             resizeFiltered(ranged2DFilter);
@@ -7188,28 +7222,33 @@ dc.heatMap = function (parent, chartGroup) {
         var gCols = _chartBody.selectAll("g.cols");
         if (gCols.empty())
             gCols = _chartBody.append("g").attr("class", "cols axis");
-        gCols.selectAll('text').data(cols.domain())
-            .enter().append("text")
+        var gColsText = gCols.selectAll('text').data(cols.domain());
+        gColsText.enter().append("text")
               .attr("x", function(d) { return cols(d) + boxWidth/2; })
               .style("text-anchor", "middle")
               .attr("y", _chart.effectiveHeight())
               .attr("dy", 12)
               .on("click", _chart.xAxisOnClick())
               .text(function(d) { return d; });
+        dc.transition(gColsText, _chart.transitionDuration())
+               .text(function(d) { return d; })
+               .attr("x", function(d) { return cols(d) + boxWidth/2; });
+        gColsText.exit().remove();
         var gRows = _chartBody.selectAll("g.rows");
         if (gRows.empty())
             gRows = _chartBody.append("g").attr("class", "rows axis");
-        gRows.selectAll('text').data(rows.domain())
-            .enter().append("text")
+        var gRowsText = gRows.selectAll('text').data(rows.domain());
+        gRowsText.enter().append("text")
               .attr("dy", 6)
               .style("text-anchor", "end")
               .attr("x", 0)
               .attr("dx", -2)
               .on("click", _chart.yAxisOnClick())
               .text(function(d) { return d; });
-        dc.transition(gRows.selectAll('text'), _chart.transitionDuration())
+        dc.transition(gRowsText, _chart.transitionDuration())
               .text(function(d) { return d; })
               .attr("y", function(d) { return rows(d) + boxHeight/2; });
+        gRowsText.exit().remove();
 
         if (_chart.hasFilter()) {
             _chart.selectAll("g.box-group").each(function (d) {

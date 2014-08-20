@@ -32,6 +32,7 @@ dc.coordinateGridMixin = function (_chart) {
     var _xElasticity = false;
     var _xAxisLabel;
     var _xAxisLabelPadding = 0;
+    var _lastXDomain;
 
     var _y;
     var _yAxis = d3.svg.axis().orient("left");
@@ -304,12 +305,16 @@ dc.coordinateGridMixin = function (_chart) {
 
     /**
     #### isOrdinal()
-    Returns true if the chart is using ordinal xUnits ([dc.units.ordinal](dcunitsordinal)), or false
+    Returns true if the chart is using ordinal xUnits ([dc.units.ordinal](#dcunitsordinal)), or false
     otherwise. Most charts behave differently with ordinal data and use the result of this method to
-    trigger the special case.
+    trigger the appropriate logic.
     **/
     _chart.isOrdinal = function () {
         return _chart.xUnits() === dc.units.ordinal;
+    };
+
+    _chart._useOuterPadding = function() {
+        return true;
     };
 
     _chart._ordinalXDomain = function() {
@@ -318,15 +323,25 @@ dc.coordinateGridMixin = function (_chart) {
     };
 
     function prepareXAxis(g) {
-        if (_chart.elasticX() && !_chart.isOrdinal()) {
-            _x.domain([_chart.xAxisMin(), _chart.xAxisMax()]);
+        if(!_chart.isOrdinal()) {
+            if (_chart.elasticX())
+                _x.domain([_chart.xAxisMin(), _chart.xAxisMax()]);
         }
-        else if (_chart.isOrdinal() && _x.domain().length===0) {
-            _x.domain(_chart._ordinalXDomain());
+        else { // _chart.isOrdinal()
+            if(_chart.elasticX() || _x.domain().length===0)
+                _x.domain(_chart._ordinalXDomain());
         }
 
+        // has the domain changed?
+        var xdom = _x.domain();
+        if(!_lastXDomain || xdom.some(function(elem, i) { return elem != _lastXDomain[i]; }))
+            _chart.rescale();
+        _lastXDomain = xdom;
+
+        // please can't we always use rangeBands for bar charts?
         if (_chart.isOrdinal()) {
-            _x.rangeBands([0,_chart.xAxisLength()],_rangeBandPadding,_outerRangeBandPadding);
+            _x.rangeBands([0,_chart.xAxisLength()],_rangeBandPadding,
+                          _chart._useOuterPadding()?_outerRangeBandPadding:0);
         } else {
             _x.range([0, _chart.xAxisLength()]);
         }

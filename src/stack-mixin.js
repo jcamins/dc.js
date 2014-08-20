@@ -39,6 +39,9 @@ dc.stackMixin = function (_chart) {
                 return true; //domainSet.has(p.x);
             };
         }
+        if (_chart.elasticX()) {
+            return function() { return true; };
+        }
         return function(p) {
             //return true;
             return p.x >= xDomain[0] && p.x <= xDomain[xDomain.length-1];
@@ -239,7 +242,7 @@ dc.stackMixin = function (_chart) {
             if (_chart.isLegendableHidden(d)) _chart.showStack(d.name);
             else _chart.hideStack(d.name);
             //_chart.redraw();
-            dc.renderAll(_chart.chartGroup());
+            _chart.renderGroup();
         }
     };
 

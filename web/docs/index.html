@@ -142,7 +142,7 @@
 <li><a href="#heat-map">Heat Map</a></li>
 <li><a href="#box-plot">Box Plot</a></li>
 </ul>
-<h4 id="version-2-0-0-dev">Version 2.0.0-dev</h4>
+<h4 id="version-2-0-0-alpha-2">Version 2.0.0-alpha.2</h4>
 <p>The entire dc.js library is scoped under the <strong>dc</strong> name space. It does not introduce anything else
 into the global name space.</p>
 <h4 id="function-chaining">Function Chaining</h4>
@@ -293,11 +293,12 @@ the same as:</p>
 <pre><code class="lang-js">d3<span class="variable">.select</span>(<span class="string">"#chart-id"</span>)<span class="variable">.selectAll</span>(<span class="keyword">selector</span>);</code></pre>
 <p>This function is <strong>not chainable</strong> since it does not return a chart instance; however the d3
 selection result can be chained to d3 function calls.</p>
-<h4 id="-anchor-anchorchart-anchorselector-chartgroup-">.anchor([anchorChart | anchorSelector], [chartGroup])</h4>
-<p>Set the svg root to either be an existing chart&#39;s root or the first element returned from a d3
-css string selector. Optionally registers the chart within the chartGroup. This class is called
-internally on chart initialization, but be called again to relocate the chart. However, it will
-orphan any previously created SVG elements.</p>
+<h4 id="-anchor-anchorchart-anchorselector-anchornode-chartgroup-">.anchor([anchorChart|anchorSelector|anchorNode], [chartGroup])</h4>
+<p>Set the svg root to either be an existing chart&#39;s root; or any valid <a href="https://github.com/mbostock/d3/wiki/Selections#selecting-elements">d3 single
+selector</a> specifying a dom
+block element such as a div; or a dom element or d3 selection. Optionally registers the chart
+within the chartGroup. This class is called internally on chart initialization, but be called
+again to relocate the chart. However, it will orphan any previously created SVG elements.</p>
 <h4 id="-anchorname-">.anchorName()</h4>
 <p>Returns the dom id for the chart&#39;s anchored location.</p>
 <h4 id="-root-rootelement-">.root([rootElement])</h4>
@@ -605,9 +606,9 @@ and a percentage string will be treated the same as an integer.</li>
 used with a chart in a composite chart, allows both left and right Y axes to be shown on a
 chart.</p>
 <h4 id="isordinal-">isOrdinal()</h4>
-<p>Returns true if the chart is using ordinal xUnits (<a href="dcunitsordinal">dc.units.ordinal</a>), or false
+<p>Returns true if the chart is using ordinal xUnits (<a href="#dcunitsordinal">dc.units.ordinal</a>), or false
 otherwise. Most charts behave differently with ordinal data and use the result of this method to
-trigger the special case.</p>
+trigger the appropriate logic.</p>
 <h4 id="-xaxislabel-labeltext-padding-">.xAxisLabel([labelText, [, padding]])</h4>
 <p>Set or get the x axis label. If setting the label, you may optionally include additional padding to
 the margin to make room for the label. By default the padded is set to 12 to accomodate the text height.</p>
@@ -796,10 +797,10 @@ The resulting data will still be sorted by .ordering (default by key).</p>
 pie chart will be rendered as a doughnut chart. Default inner radius is 0px.</p>
 <h4 id="-radius-radius-">.radius([radius])</h4>
 <p>Get or set the outer radius. Default radius is 90px.</p>
-<h4 id="-cx-">.cx()</h4>
-<p>Get center x coordinate position. This function is <strong>not chainable</strong>.</p>
-<h4 id="-cy-">.cy()</h4>
-<p>Get center y coordinate position. This function is <strong>not chainable</strong>.</p>
+<h4 id="-cx-cx-">.cx([cx])</h4>
+<p>Get or set center x coordinate position. Default is center of svg.</p>
+<h4 id="-cy-cy-">.cy([cy])</h4>
+<p>Get or set center y coordinate position. Default is center of svg.</p>
 <h4 id="-minangleforlabel-minangle-">.minAngleForLabel([minAngle])</h4>
 <p>Get or set the minimal slice angle for label rendering. Any slice with a smaller angle will not
 display a slice label.  Default min angle is 0.5.</p>

@@ -1,4 +1,33 @@
-#### Version 2.0.0-dev
+# DC API
+  * [Utilities](#utilities)
+  * [Filters](#filters)
+  * [Base Mixin](#base-mixin)
+  * [Listeners](#listeners)
+  * [Margin Mixin](#margin-mixin)
+  * [Color Mixin](#color-mixin)
+  * [Coordinate Grid Mixin](#coordinate-grid-mixin)
+  * [Stack Mixin](#stack-mixin)
+  * [Cap Mixin](#cap-mixin)
+  * [Bubble Mixin](#bubble-mixin)
+  * [Pie Chart](#pie-chart)
+  * [Bar Chart](#bar-chart)
+  * [Line Chart](#line-chart)
+  * [Data Count Widget](#data-count-widget)
+  * [Data Table Widget](#data-table-widget)
+  * [Data Grid Widget](#data-grid-widget)
+  * [Bubble Chart](#bubble-chart)
+  * [Composite Chart](#composite-chart)
+  * [Series Chart](#series-chart)
+  * [Geo Choropleth Chart](#geo-choropleth-chart)
+  * [Bubble Overlay Chart](#bubble-overlay-chart)
+  * [Row Chart](#row-chart)
+  * [Legend](#legend)
+  * [Scatter Plot](#scatter-plot)
+  * [Number Display Widget](#number-display-widget)
+  * [Heat Map](#heat-map)
+  * [Box Plot](#box-plot)
+
+#### Version 2.0.0-alpha.2
 
 The entire dc.js library is scoped under the **dc** name space. It does not introduce anything else
 into the global name space.
@@ -623,9 +652,9 @@ used with a chart in a composite chart, allows both left and right Y axes to be 
 chart.
 
 #### isOrdinal()
-Returns true if the chart is using ordinal xUnits ([dc.units.ordinal](dcunitsordinal)), or false
+Returns true if the chart is using ordinal xUnits ([dc.units.ordinal](#dcunitsordinal)), or false
 otherwise. Most charts behave differently with ordinal data and use the result of this method to
-trigger the special case.
+trigger the appropriate logic.
 
 #### .xAxisLabel([labelText, [, padding]])
 Set or get the x axis label. If setting the label, you may optionally include additional padding to
@@ -875,11 +904,11 @@ pie chart will be rendered as a doughnut chart. Default inner radius is 0px.
 #### .radius([radius])
 Get or set the outer radius. Default radius is 90px.
 
-#### .cx()
-Get center x coordinate position. This function is **not chainable**.
+#### .cx([cx])
+Get or set center x coordinate position. Default is center of svg.
 
-#### .cy()
-Get center y coordinate position. This function is **not chainable**.
+#### .cy([cy])
+Get or set center y coordinate position. Default is center of svg.
 
 #### .minAngleForLabel([minAngle])
 Get or set the minimal slice angle for label rendering. Any slice with a smaller angle will not
