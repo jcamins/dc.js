@@ -66,6 +66,7 @@ dc.compositeChart = function (parent, chartGroup) {
             child.xUnits(_chart.xUnits());
             child.transitionDuration(_chart.transitionDuration());
             child.brushOn(_chart.brushOn());
+            child._rangeBandPadding(_chart._rangeBandPadding());
         }
 
         return g;
