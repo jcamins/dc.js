@@ -41,7 +41,7 @@ dc.barChart = function (parent, chartGroup) {
 
     var _chart = dc.stackMixin(dc.coordinateGridMixin({}));
 
-    var _gap = DEFAULT_GAP_BETWEEN_BARS;
+    var _gap;
     var _centerBar = false;
     var _alwaysUseRounding = false;
 
@@ -128,22 +128,36 @@ dc.barChart = function (parent, chartGroup) {
             .remove();
     }
 
+    var _calcType;
     function calculateBarWidth() {
         if (_barWidth === undefined) {
             var numberOfBars = _chart.xUnitCount();
 
+            /*if (typeof _chart.barPadding() === 'undefined' && typeof _gap === 'undefined') {
+                _chart.barPadding(0);
+                _gap = DEFAULT_GAP_BETWEEN_BARS;
+            }*/
             // please can't we always use rangeBands for bar charts?
-            if (_chart.isOrdinal() && _gap===undefined)
+            if (_chart.isOrdinal() && _gap===undefined) {
                 _barWidth = Math.floor(_chart.x().rangeBand());
-            else if (_gap)
-                _barWidth = Math.floor((_chart.xAxisLength() - (numberOfBars - 1) * _gap) / numberOfBars);
-            else
+                calcType = 1;
+            } else if (_chart.barPadding()) {
                 _barWidth = Math.floor(_chart.xAxisLength() / (1 + _chart.barPadding()) / numberOfBars);
+                calcType = 2;
+            } else {
+                _barWidth = Math.floor((_chart.xAxisLength() - (numberOfBars - 1) * (_gap || DEFAULT_GAP_BETWEEN_BARS)) / numberOfBars);
+                calcType = 3;
+            }
 
             if (_barWidth == Infinity || isNaN(_barWidth) || _barWidth < MIN_BAR_WIDTH)
                 _barWidth = MIN_BAR_WIDTH;
         }
     }
+
+    _chart.widthInfo = function () {
+        calculateBarWidth();
+        return "Width: " + _barWidth + "\nEquation: " + calcType;
+    };
 
     _chart.fadeDeselectedArea = function () {
         var bars = _chart.chartBodyG().selectAll("rect.bar");

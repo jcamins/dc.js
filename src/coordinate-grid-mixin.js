@@ -65,7 +65,7 @@ dc.coordinateGridMixin = function (_chart) {
     var _clipPadding = 0;
 
     var _outerRangeBandPadding = 0.5;
-    var _rangeBandPadding = 0;
+    var _rangeBandPadding;
 
     var _useRightYAxis = false;
 
@@ -340,7 +340,7 @@ dc.coordinateGridMixin = function (_chart) {
 
         // please can't we always use rangeBands for bar charts?
         if (_chart.isOrdinal()) {
-            _x.rangeBands([0,_chart.xAxisLength()],_rangeBandPadding,
+            _x.rangeBands([0,_chart.xAxisLength()],_rangeBandPadding || 0,
                           _chart._useOuterPadding()?_outerRangeBandPadding:0);
         } else {
             _x.range([0, _chart.xAxisLength()]);

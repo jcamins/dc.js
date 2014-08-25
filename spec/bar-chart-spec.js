@@ -840,6 +840,7 @@ describe('dc.barChart', function() {
             chart.render();
         });
         it('should not overlap bars', function() {
+            expect("\nBar padding: " + chart.barPadding() + "\nGap: " + chart.gap() + "\n" + chart.widthInfo() + "\nX axis length: " + chart.xAxisLength() + "\nBar count: " + data.size() + "\n").toBe('Hi');
             for(var i=0; i<3; ++i)
                 checkBarOverlap(i);
         });
@@ -854,6 +855,7 @@ describe('dc.barChart', function() {
                 chart.render();
             });
             it('should not overlap bars', function() {
+                expect("\nBar padding: " + chart.barPadding() + "\nGap: " + chart.gap() + "\n" + chart.widthInfo() + "\nX axis length: " + chart.xAxisLength() + "\nBar count: " + data.size() + "\n").toBe('Hi');
                 for(var i=0; i<5; ++i)
                     checkBarOverlap(i);
             });
