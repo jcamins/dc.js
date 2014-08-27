@@ -319,3 +319,19 @@ div.dc-chart {
 .dc-chart .candlestick line, .dc-chart .candlestick rect {
     shape-rendering: crispEdges;
 }
+
+.dc-chart .candlestick.up line {
+    stroke: green;
+}
+
+.dc-chart .candlestick.down line {
+    stroke: red;
+}
+
+.dc-chart .candlestick.up rect {
+    fill: green;
+}
+
+.dc-chart .candlestick.down rect {
+    fill: red;
+}

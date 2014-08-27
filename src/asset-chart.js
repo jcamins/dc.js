@@ -64,12 +64,9 @@ dc.assetChart = function (parent, chartGroup) {
     function updateCandlesticks(candlesticksG) {
         var _boxWidth = _chart.boxWidth()(_chart.xAxisMin()), _center = _boxWidth / 2;
         dc.transition(candlesticksG, _chart.transitionDuration())
+            .attr("class", function (d) { return "candlestick " + (_chart.directionAccessor()(d) >= 0 ? 'up' : 'down'); })
             .attr("transform", function (d, i) {
                 return "translate(" + (_chart.x()(d.key) - _center) + ",0)";
-            })
-            .each(function() {
-                d3.select(this).select('rect.box').attr("fill", _chart.getColor);
-                d3.select(this).select('line.shadow').attr("stroke", _chart.getColor);
             })
         dc.transition(candlesticksG.selectAll('rect.box'), _chart.transitionDuration())
             .attr("width", _boxWidth)
@@ -119,6 +116,14 @@ dc.assetChart = function (parent, chartGroup) {
      the 'close' property in the value object.
      **/
     simpleAccessor(_chart, 'closeAccessor', dc.pluck('close'));
+    /**
+     #### .directionAccessor([accessorFunction])
+     Set or get the accessor function for the bar direction. Defaults to a function that
+     returns the difference between the close and the open.
+     **/
+    simpleAccessor(_chart, 'directionAccessor', function (d) {
+        return _chart.closeAccessor()(d.value) - _chart.openAccessor()(d.value);
+    });
     /**
      #### .boxWidth([lookupFunction])
      Set or get the width of each box. This can be either a number or a function that will be
@@ -176,11 +181,6 @@ dc.assetChart = function (parent, chartGroup) {
         });
         return dc.utils.add(max, _chart.yAxisPadding());
     };
-
-    _chart.colors(d3.scale.ordinal().domain(['down', 'up']).range(['red', 'green']));
-    _chart.colorAccessor(function (d) {
-        return _chart.closeAccessor()(d.value) > _chart.openAccessor()(d.value) ? 'up' : 'down';
-    });
 
     return _chart.anchor(parent, chartGroup);
 };
