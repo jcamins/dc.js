@@ -56,21 +56,9 @@ dc.assetChart = function (parent, chartGroup) {
         candlesticksGEnter
             .attr("class", "candlestick");
         candlesticksGEnter.append("rect")
-            .attr("class", "box")
-            .attr("height", function (d, i) {
-                return Math.abs(_chart.y()(_chart.openAccessor()(d.value, i)) - _chart.y()(_chart.closeAccessor()(d.value, i)));
-            })
-            .attr("y", function (d, i) {
-                return _chart.y()(Math.max(_chart.openAccessor()(d.value, i), _chart.closeAccessor()(d.value, i)));
-            });
+            .attr("class", "box");
         candlesticksGEnter.append("line")
-            .attr("class", "shadow")
-            .attr("y1", function (d, i) {
-                return _chart.y()(_chart.highAccessor()(d.value, i));
-            })
-            .attr("y2", function (d, i) {
-                return _chart.y()(_chart.lowAccessor()(d.value, i));
-            });
+            .attr("class", "shadow");
     }
 
     function updateCandlesticks(candlesticksG) {
@@ -84,10 +72,22 @@ dc.assetChart = function (parent, chartGroup) {
                 d3.select(this).select('line.shadow').attr("stroke", _chart.getColor);
             })
         dc.transition(candlesticksG.selectAll('rect.box'), _chart.transitionDuration())
-            .attr("width", _boxWidth);
+            .attr("width", _boxWidth)
+            .attr("height", function (d, i) {
+                return Math.abs(_chart.y()(_chart.openAccessor()(d.value, i)) - _chart.y()(_chart.closeAccessor()(d.value, i)));
+            })
+            .attr("y", function (d, i) {
+                return _chart.y()(Math.max(_chart.openAccessor()(d.value, i), _chart.closeAccessor()(d.value, i)));
+            });
         dc.transition(candlesticksG.selectAll('line.shadow'), _chart.transitionDuration())
             .attr("x1", _center)
-            .attr("x2", _center);
+            .attr("x2", _center)
+            .attr("y1", function (d, i) {
+                return _chart.y()(_chart.highAccessor()(d.value, i));
+            })
+            .attr("y2", function (d, i) {
+                return _chart.y()(_chart.lowAccessor()(d.value, i));
+            });
     }
 
     function removeCandlesticks(candlesticksG) {
