@@ -86,16 +86,13 @@ dc.assetChart = function (parent, chartGroup) {
         dc.transition(candlesticksG.selectAll('rect.box'), _chart.transitionDuration())
             .attr("width", _boxWidth);
         dc.transition(candlesticksG.selectAll('line.shadow'), _chart.transitionDuration())
-            .attr("x1", function (d, i) {
-                return _center;
-            })
-            .attr("x2", function (d, i) {
-                return _center;
-            });
+            .attr("x1", _center)
+            .attr("x2", _center);
     }
 
     function removeCandlesticks(candlesticksG) {
-        candlesticksG.exit().remove();
+        dc.transition(candlesticksG.exit(), _chart.transitionDuration())
+            .attr("opacity", 0).remove();
     }
 
     /**
