@@ -159,6 +159,24 @@ dc.assetChart = function (parent, chartGroup) {
     _chart.boxPadding = _chart._rangeBandPadding;
     _chart.boxPadding(0.3);
 
+    /*
+     * Overload the yAxisMin and yAxisMax functions since the valueAccessor has slightly
+     * different semantics for the asset chart than for other chart types.
+     */
+    _chart.yAxisMin = function () {
+        var min = d3.min(_chart.data(), function (e) {
+            return _chart.lowAccessor()(e.value);
+        });
+        return dc.utils.subtract(min, _chart.yAxisPadding());
+    };
+
+    _chart.yAxisMax = function () {
+        var max = d3.max(_chart.data(), function (e) {
+            return _chart.highAccessor()(e.value);
+        });
+        return dc.utils.add(max, _chart.yAxisPadding());
+    };
+
     _chart.colors(d3.scale.ordinal().domain(['down', 'up']).range(['red', 'green']));
     _chart.colorAccessor(function (d) {
         return _chart.closeAccessor()(d.value) > _chart.openAccessor()(d.value) ? 'up' : 'down';
