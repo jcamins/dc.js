@@ -67,7 +67,7 @@ dc.assetChart = function (parent, chartGroup) {
             .attr("class", function (d) { return "candlestick " + (_chart.directionAccessor()(d) >= 0 ? 'up' : 'down'); })
             .attr("transform", function (d, i) {
                 return "translate(" + (_chart.x()(d.key) - _center) + ",0)";
-            })
+            });
         dc.transition(candlesticksG.selectAll('rect.box'), _chart.transitionDuration())
             .attr("width", _boxWidth)
             .attr("height", function (d, i) {
