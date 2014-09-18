@@ -407,5 +407,13 @@ dc.compositeChart = function (parent, chartGroup) {
         return _chart;
     };
 
+    dc.override(_chart, 'filterAll', function () {
+        var ret;
+        for (var i = 0; i < _children.length; ++i) {
+            ret = _children[i].filter(null);
+        }
+        return ret;
+    });
+
     return _chart.anchor(parent, chartGroup);
 };
