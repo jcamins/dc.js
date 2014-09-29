@@ -349,7 +349,7 @@ dc.printers.filters = function (filters) {
 dc.printers.filter = function (filter) {
     var s = '';
 
-    if (filter) {
+    if (typeof filter !== 'undefined' && filter !== null) {
         if (filter instanceof Array) {
             if (filter.length >= 2) {
                 s = '[' + dc.utils.printSingleValue(filter[0]) + ' -> ' + dc.utils.printSingleValue(filter[1]) + ']';
@@ -2880,7 +2880,8 @@ dc.coordinateGridMixin = function (_chart) {
 
         dc.utils.appendOrSelect(chartBodyClip, 'rect')
             .attr('width', _chart.xAxisLength() + padding)
-            .attr('height', _chart.yAxisHeight() + padding);
+            .attr('height', _chart.yAxisHeight() + padding)
+            .attr('transform', 'translate(-' + _clipPadding + ', -' + _clipPadding + ')');
     }
 
     _chart._preprocessData = function () {};
@@ -7275,9 +7276,9 @@ dc.scatterPlot = function (parent, chartGroup) {
 
     /**
     #### .existenceAccessor([accessor])
-    Get or set the existence accessor.  By default, the existence accessor checks if the
-    reduced value is truthy.  If a point exists, it is drawn with symbolSize radius and
-    opacity 1; if it does not exist, it is drawn with hiddenSize radius and opacity 0.
+    Get or set the existence accessor.  If a point exists, it is drawn with symbolSize radius and
+    opacity 1; if it does not exist, it is drawn with hiddenSize radius and opacity 0. By default,
+    the existence accessor checks if the reduced value is truthy.
     **/
 
     _chart.existenceAccessor = function (acc) {
