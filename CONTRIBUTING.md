@@ -16,6 +16,7 @@
 * Run `grunt server` and go to http://localhost:8888/spec to develop your tests.
 * Run `grunt lint` to fix any final linting issues via jshint.
 * Run `grunt test` to confirm that all tests will pass on phantomjs.
+* Run `grunt jshint` and `grunt jscs` to confirm that your code meets the dc.js style guidelines
 * Commit your changes to `src/*` and `spec/*` but not any build artifacts.  (Build artifacts include `dc.*js*`, `web/docs/*`, `web/js/*`)
 * Submit a pull request
 * If you merge master or another branch into your patchset, please rebase against master.
@@ -24,8 +25,21 @@
 
 #### Coding Conventions
 
-* Please try to follow the existing code formatting
 * Avoid tabs and trailing whitespace
+* Please try to follow the existing code formatting
+* We use jshint and jscs to verify most of our coding conventions
+
+It helps keep on top of the conventions if you create a git pre-commit hook `.git/hooks/pre-commit`:
+```
+#!/usr/bin/env sh
+
+grunt jshint
+grunt jscs
+```
+
+(You also need to make it executable with  `chmod u+x .git/hooks/pre-commit`)
+
+Or you can just run the commands manually before committing.
 
 #### Testing Notes
 

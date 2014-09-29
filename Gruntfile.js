@@ -36,12 +36,26 @@ module.exports = function (grunt) {
                 path: [output.js, output.jsmin]
             }
         },
+        jscs: {
+            old: {
+                src: ['spec/**/*.js'],
+                options: {
+                    validateIndentation: 4
+                }
+            },
+            source: {
+                src: ['src/**/*.js', '!src/{banner,footer}.js', 'Gruntfile.js', 'web/stock.js'],
+                options: {
+                    config: '.jscsrc'
+                }
+            }
+        },
         jshint: {
             source: {
-                src: ['src/**/*.js','Gruntfile.js', 'spec/**/*.js', 'web/stock.js'],
+                src: ['src/**/*.js', 'Gruntfile.js', 'web/stock.js'],
                 options: {
-                    indent: 4,
-                    ignores: ['src/banner.js','src/footer.js','src/d3.box.js']
+                    jshintrc: '.jshintrc',
+                    ignores: ['src/banner.js', 'src/footer.js']
                 }
             }
         },
@@ -50,7 +64,7 @@ module.exports = function (grunt) {
                 files: ['src/**/*.js'],
                 tasks: ['build', 'copy']
             },
-            jasmine_runner: {
+            jasmineRunner: {
                 files: ['spec/**/*.js'],
                 tasks: ['jasmine:specs:build']
             },
@@ -76,19 +90,19 @@ module.exports = function (grunt) {
         jasmine: {
             specs: {
                 options: {
-                    display: "short",
+                    display: 'short',
                     summary: true,
-                    specs:  "spec/*-spec.js",
-                    helpers: "spec/helpers/*.js",
-                    version: "2.0.0",
-                    outfile: "spec/index.html",
+                    specs:  'spec/*-spec.js',
+                    helpers: 'spec/helpers/*.js',
+                    version: '2.0.0',
+                    outfile: 'spec/index.html',
                     keepRunner: true
                 },
                 src: [
-                    "web/js/d3.js",
-                    "web/js/crossfilter.js",
-                    "web/js/colorbrewer.js",
-                    "dc.js"
+                    'web/js/d3.js',
+                    'web/js/crossfilter.js',
+                    'web/js/colorbrewer.js',
+                    'dc.js'
                 ]
             },
             coverage:{
@@ -115,16 +129,28 @@ module.exports = function (grunt) {
         'saucelabs-jasmine': {
             all: {
                 options: {
-                    urls: ["http://localhost:8888/spec/"],
+                    urls: ['http://localhost:8888/spec/'],
                     tunnelTimeout: 5,
                     build: process.env.TRAVIS_JOB_ID,
                     concurrency: 3,
                     browsers: [
-                        { browserName: "firefox", version: "25", platform: "linux" },
-                        { browserName: "safari", version: "7", platform: "OS X 10.9" },
-                        { browserName: "internet explorer", version: "10", platform: "WIN8" }
+                        {
+                            browserName: 'firefox',
+                            version: '25',
+                            platform: 'linux'
+                        },
+                        {
+                            browserName: 'safari',
+                            version: '7',
+                            platform: 'OS X 10.9'
+                        },
+                        {
+                            browserName: 'internet explorer',
+                            version: '10',
+                            platform: 'WIN8'
+                        }
                     ],
-                    testname: "dc.js"
+                    testname: 'dc.js'
                 }
             }
         },
@@ -163,15 +189,18 @@ module.exports = function (grunt) {
         copy: {
             'dc-to-gh': {
                 files: [
-                    { expand: true, flatten: true, src: 'dc.css', dest: 'web/css/'},
-                    { expand: true,
-                      flatten: true,
-                      src: [output.js,
-                            output.js + ".map",
+                    {expand: true, flatten: true, src: 'dc.css', dest: 'web/css/'},
+                    {
+                        expand: true,
+                        flatten: true,
+                        src: [
+                            output.js,
+                            output.js + '.map',
                             'node_modules/d3/d3.js',
                             'node_modules/crossfilter/crossfilter.js',
-                            'test/env-data.js'],
-                      dest: 'web/js/'
+                            'test/env-data.js'
+                        ],
+                        dest: 'web/js/'
                     }
                 ]
             }
@@ -179,29 +208,36 @@ module.exports = function (grunt) {
         fileindex: {
             'examples-listing': {
                 options: {
-                    format: function(list, options, dest){
-                        var examples = list.sort().map(function(entry) {
-                            return entry.replace(/.*examples\//, "");
-                        }).filter(function(e) { return e!="index.html"; });
+                    format: function (list) {
+                        var examples = list.sort().map(function (entry) {
+                            return entry.replace(/.*examples\//, '');
+                        }).filter(function (e) { return e !== 'index.html'; });
                         var rows = [];
-                        for(var i=0; i<examples.length; i += 5) {
+                        for (var i = 0; i < examples.length; i += 5) {
                             var cols = [];
-                            for(var j=0; j<5; ++j) {
-                                if(i+j>=examples.length) break;
-                                var fname = examples[i+j];
-                                cols.push("    <td><a href='" + fname + "'>" + fname + "</a></td>");
+                            for (var j = 0; j < 5; ++j) {
+                                if (i + j >= examples.length) {
+                                    break;
+                                }
+                                var fname = examples[i + j];
+                                cols.push('    <td><a href="' + fname + '">' + fname + '</a></td>');
                             }
-                            rows.push("  <tr>\n" + cols.join("\n") + "\n<tr>");
+                            rows.push('  <tr>\n' + cols.join('\n') + '\n<tr>');
                         }
-                        var body = "<table class='table'>\n" + rows.join("\n") + "\n</table>";
-                        return ["<html><head><title>Index of dc.js examples</title>",
-                                '<link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css"></head>',
-                                '<body><div class="container">',
-                                '<h2>Examples of using dc.js</h2>',
-                                '<p>An attempt to present a simple example of each chart type.  <a href="https://github.com/dc-js/dc.js/blob/master/CONTRIBUTING.md#pull-request-guidelines">Contributions welcome</a>.</p>',
-                                '<p>Source <a href="https://github.com/dc-js/dc.js/tree/master/web/examples">here</a>.</p>',
-                                body,
-                                "</div></body></html>"].join("\n");
+                        var body = '<table class="table">\n' + rows.join('\n') + '\n</table>';
+                        return [
+                            '<html><head><title>Index of dc.js examples</title>',
+                            '<link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css"></head>',
+                            '<body><div class="container">',
+                            '<h2>Examples of using dc.js</h2>',
+                            '<p>An attempt to present a simple example of each chart type.',
+                            '<a href="https://github.com/dc-js/dc.js/blob/master/CONTRIBUTING.md">',
+                            'Contributions welcome</a>.</p>',
+                            '<p>Source <a href="https://github.com/dc-js/dc.js/tree/master/web/examples">',
+                            'here</a>.</p>',
+                            body,
+                            '</div></body></html>'
+                        ].join('\n');
                     },
                     absolute: true
                 },
@@ -214,29 +250,36 @@ module.exports = function (grunt) {
         'gh-pages': {
             options: {
                 base: 'web',
-                message: "Synced from from master branch."
+                message: 'Synced from from master branch.'
             },
             src: ['**']
         },
         shell: {
             merge: {
-                command: function(pr) {
-                    return ['git fetch origin',
-                            'git checkout master',
-                            'git reset --hard origin/master',
-                            'git fetch origin',
-                            'git merge --no-ff origin/pr/'+pr+' -m "Merge pull request #'+pr+'"'
-                           ].join('&&');
+                command: function (pr) {
+                    return [
+                        'git fetch origin',
+                        'git checkout master',
+                        'git reset --hard origin/master',
+                        'git fetch origin',
+                        'git merge --no-ff origin/pr/' + pr + ' -m \'Merge pull request #' + pr + '\''
+                    ].join('&&');
                 },
-                options: { stdout: true, failOnError: true }
+                options: {
+                    stdout: true,
+                    failOnError: true
+                }
             },
             amend: {
                 command: 'git commit -a --amend --no-edit',
-                options: { stdout: true, failOnError: true }
+                options: {
+                    stdout: true,
+                    failOnError: true
+                }
             },
             hooks: {
                 command: 'cp -n scripts/pre-commit.sh .git/hooks/pre-commit' +
-                    ' || echo "Cowardly refusing to overwrite your existing git pre-commit hook."'
+                    ' || echo \'Cowardly refusing to overwrite your existing git pre-commit hook.\''
             }
         }
     });
@@ -251,6 +294,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-docco2');
     grunt.loadNpmTasks('grunt-gh-pages');
+    grunt.loadNpmTasks('grunt-jscs');
     grunt.loadNpmTasks('grunt-saucelabs');
     grunt.loadNpmTasks('grunt-markdown');
     grunt.loadNpmTasks('grunt-sed');
@@ -259,45 +303,47 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-fileindex');
 
     // custom tasks
-    grunt.registerMultiTask('emu', 'Documentation extraction by emu.', function() {
+    grunt.registerMultiTask('emu', 'Documentation extraction by emu.', function () {
         var emu = require('emu'),
-            fs = require('fs'),
             srcFile = this.files[0].src[0],
             destFile = this.files[0].dest,
             source = grunt.file.read(srcFile);
         grunt.file.write(destFile, emu.getComments(source));
-        grunt.log.writeln('File "' + destFile + '" created.');
+        grunt.log.writeln('File \'' + destFile + '\' created.');
     });
-    grunt.registerTask('merge', 'Merge a github pull request.', function(pr) {
+    grunt.registerTask('merge', 'Merge a github pull request.', function (pr) {
         grunt.log.writeln('Merge Github Pull Request #' + pr);
-        grunt.task.run(['shell:merge:'+pr,'test','shell:amend']);
+        grunt.task.run(['shell:merge:' + pr, 'test' , 'shell:amend']);
     });
-    grunt.registerMultiTask('toc', 'Generate a markdown table of contents.', function() {
+    grunt.registerMultiTask('toc', 'Generate a markdown table of contents.', function () {
         var marked = require('marked'),
-            slugify = function(s) { return s.trim().replace(/[-_\s]+/g, '-').toLowerCase(); },
+            slugify = function (s) { return s.trim().replace(/[-_\s]+/g, '-').toLowerCase(); },
             srcFile = this.files[0].src[0],
             destFile = this.files[0].dest,
             source = grunt.file.read(srcFile),
             tokens = marked.lexer(source),
             toc = tokens.filter(function (item) {
-                return item.type == "heading" && item.depth == 2;
-            }).reduce(function(toc, item) {
-                return toc + "  * [" + item.text + "](#" + slugify(item.text) + ")\n";
-            }, "");
+                return item.type === 'heading' && item.depth === 2;
+            }).reduce(function (toc, item) {
+                return toc + '  * [' + item.text + '](#' + slugify(item.text) + ')\n';
+            }, '');
 
-        grunt.file.write(destFile, "# DC API\n" + toc +"\n"+ source);
-        grunt.log.writeln('Added TOC to "' + destFile + '".');
+        grunt.file.write(destFile, '# DC API\n' + toc + '\n' + source);
+        grunt.log.writeln('Added TOC to \'' + destFile + '\'.');
     });
-    grunt.registerTask('test-stock-example', 'Test a new rendering of the stock example web page against a baseline rendering', function (option) {
-        require('./regression/stock-regression-test.js').testStockExample(this.async(), option === "diff");
-    });
+    grunt.registerTask('test-stock-example', 'Test a new rendering of the stock example web page against a ' +
+        'baseline rendering', function (option) {
+            require('./regression/stock-regression-test.js').testStockExample(this.async(), option === 'diff');
+        });
     grunt.registerTask('update-stock-example', 'Update the baseline stock example web page.', function () {
         require('./regression/stock-regression-test.js').updateStockExample(this.async());
     });
     grunt.registerTask('watch:jasmine', function () {
         grunt.config('watch', {
-            options: { interrupt: true },
-            runner: grunt.config('watch').jasmine_runner,
+            options: {
+                interrupt: true
+            },
+            runner: grunt.config('watch').jasmineRunner,
             scripts: grunt.config('watch').scripts
         });
         grunt.task.run('watch');
@@ -312,7 +358,7 @@ module.exports = function (grunt) {
     grunt.registerTask('coverage', ['docs', 'jasmine:coverage']);
     grunt.registerTask('ci', ['test', 'jasmine:specs:build', 'connect:server', 'saucelabs-jasmine']);
     grunt.registerTask('ci-pull', ['test', 'jasmine:specs:build', 'connect:server']);
-    grunt.registerTask('lint', ['build', 'jshint']);
+    grunt.registerTask('lint', ['build', 'jshint', 'jscs']);
     grunt.registerTask('default', ['build']);
 };
 
